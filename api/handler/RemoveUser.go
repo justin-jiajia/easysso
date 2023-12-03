@@ -27,5 +27,5 @@ func RemoveUserHandler(ctx *gin.Context) {
 		return
 	}
 	ctx.String(http.StatusNoContent, "\n")
-	database.DB.Delete(&now_user)
+	database.DB.Select("Credentials").Delete(&now_user)
 }

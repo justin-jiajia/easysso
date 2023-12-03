@@ -21,6 +21,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         login: path.resolve(__dirname, 'login.html'),
+        logout: path.resolve(__dirname, 'logout.html'),
         settings: path.resolve(__dirname, 'settings.html'),
         authorize: path.resolve(__dirname, 'authorize.html'),
       },

@@ -11,7 +11,6 @@ import (
 
 type ChangePasswd struct {
 	NewPasswd string `json:"new_passwd" binding:"required"`
-	OldPasswd string `json:"old_passwd" binding:"required"`
 }
 
 func ChangePasswdHandler(ctx *gin.Context) {
@@ -21,10 +20,6 @@ func ChangePasswdHandler(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&json)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "出错了: " + err.Error()})
-		return
-	}
-	if !utils.VerifyPasswd(json.OldPasswd, now_user.PasswordHash) {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "原密码错误"})
 		return
 	}
 	now_user.PasswordHash = utils.GetPasswdHash(json.NewPasswd)

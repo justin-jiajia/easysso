@@ -12,8 +12,10 @@ func InitApi(r *gin.Engine) {
 	{
 		user := api.Group("/user/")
 		{
-			user.POST("/sign_up/", handler.SignUpHandler) //注册
-			user.POST("/sign_in/", handler.SignInHandler) //登录
+			user.POST("/sign_up/", handler.SignUpHandler)                   //注册
+			user.POST("/sign_in/", handler.SignInHandler)                   //登录
+			user.POST("/startwlogin/", handler.WebauthnLoginStartHandler)   //登录
+			user.POST("/finishwlogin/", handler.WebauthnLoginFinishHandler) //登录完成
 			setting := user.Group("/settings/")
 			setting.Use(middleware.Auth())
 			{
@@ -21,6 +23,15 @@ func InitApi(r *gin.Engine) {
 				setting.POST("/avatar/", handler.AvatarUploadHandler)        //上传头像
 				setting.POST("/change_passwd/", handler.ChangePasswdHandler) //修改密码
 				setting.POST("/remove/", handler.RemoveUserHandler)          //删除账户
+				webauthn := setting.Group("/webauthn/")
+				{
+					webauthn.GET("/startregistration/", handler.WebauthnResStartHandler)    //注册
+					webauthn.POST("/finishregistration/", handler.WebauthnResFinishHandler) //注册完成
+					webauthn.GET("/list/", handler.WebauthnList)                            //列举验证器
+					webauthn.POST("/delete/", handler.WebauthnDelete)                       //删除验证器
+					webauthn.POST("/edit/", handler.WebauthnEdit)                           //重命名验证器
+
+				}
 			}
 		}
 		oath2 := api.Group("/oath2/")

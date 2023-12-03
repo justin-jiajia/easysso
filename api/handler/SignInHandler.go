@@ -27,14 +27,18 @@ func SignInHandler(ctx *gin.Context) {
 		if utils.VerifyPasswd(json.Passward, nowuser.PasswordHash) {
 			token, exp := utils.NewUserToken(nowuser.ID)
 			ctx.JSON(http.StatusOK, gin.H{"token": token, "id": nowuser.ID, "expire": exp.Unix()})
+			return
 		} else {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "密码不正确"})
+			return
 		}
 	} else {
 		if result.Error == gorm.ErrRecordNotFound {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "用户不存在"})
+			return
 		} else {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "出错了: " + result.Error.Error()})
+			return
 		}
 	}
 }

@@ -15,6 +15,12 @@ type ConfigT struct {
 	TokenName      string `ini:"token_name"`
 	TokenExpTime   int64  `ini:"token_exp_time"`
 	AvatarSavePath string `ini:"avatar_save_path"`
+	DBSavePath     string `ini:"db_save_path"`
+	IsDevString    string `ini:"dev"`
+	Displayname    string `ini:"display_name"`
+	RPID           string `ini:"rp_id"`
+	RPOrigin       string `ini:"rp_origin"`
+	IsDev          bool
 	TokenKeyByte   []byte
 }
 type Client struct {
@@ -39,9 +45,10 @@ func ReadConfig() {
 	config_section := iniconf.Section("")
 	err = config_section.MapTo(&Config)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		log.Panic("Cannot load config.ini")
 	}
+	Config.IsDev = Config.IsDevString == "true"
 	Config.TokenKeyByte = []byte(Config.TokenKey)
 	err = os.MkdirAll(Config.AvatarSavePath, os.ModePerm)
 	if err != nil {

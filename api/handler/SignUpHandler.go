@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/justin-jiajia/easysso/api/database"
 	"github.com/justin-jiajia/easysso/api/utils"
 
@@ -25,9 +26,9 @@ func SignUpHandler(ctx *gin.Context) {
 	test_user := database.User{}
 	result := database.DB.Where(&database.User{UserName: json.Username}).First(&test_user)
 	if result.Error == gorm.ErrRecordNotFound {
-		new_user := database.User{UserName: json.Username, PasswordHash: utils.GetPasswdHash(json.Passward)}
-		token, exp := utils.NewUserToken(new_user.ID)
+		new_user := database.User{UserName: json.Username, PasswordHash: utils.GetPasswdHash(json.Passward), UUID: uuid.New().String()}
 		database.DB.Create(&new_user)
+		token, exp := utils.NewUserToken(new_user.ID)
 		ctx.JSON(http.StatusOK, gin.H{"token": token, "id": new_user.ID, "expire": exp.Unix()})
 	} else {
 		if result.Error == nil {

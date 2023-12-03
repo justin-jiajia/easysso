@@ -18,6 +18,7 @@ func AvatarUploadHandler(ctx *gin.Context) {
 	file, err := ctx.FormFile("file")
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "上传失败，错误：" + err.Error()})
+		return
 	} else {
 		flag := false
 		this_type := ""
@@ -30,6 +31,7 @@ func AvatarUploadHandler(ctx *gin.Context) {
 		}
 		if !flag {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "上传失败，文件后缀应为 jpg jpeg gif png 中的一种"})
+			return
 		} else {
 			filename := fmt.Sprintf("%d", middleware.ID) + this_type
 			err = ctx.SaveUploadedFile(file, path.Join(config.Config.AvatarSavePath, filename))

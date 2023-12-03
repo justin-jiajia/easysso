@@ -1,13 +1,10 @@
 <template>
   <v-app>
-    <v-app-bar>
+    <v-app-bar elevation="5">
       <v-app-bar-title>登录/注册以继续<span v-if="name != ''">前往{{ name }}</span></v-app-bar-title>
     </v-app-bar>
     <v-main>
-      <Transition name="fade">
-        <v-alert v-if="tipshow" :title="tiptitle" :type="tiptype" :text="tiptext" class="tip"></v-alert>
-      </Transition>
-      <v-card class="login-card" v-if="noerr">
+      <v-card class="login-card">
         <div class="container d-flex justify-center">
           <div class="circle rounded-circle bg-primary text-white d-flex justify-center align-center">
             <v-icon icon="mdi-login-variant" class="login-icon"></v-icon>
@@ -30,6 +27,10 @@
                   :rules="passwdrule"></v-text-field>
                 <v-checkbox label="记住我" v-model="login_remember_me"></v-checkbox>
                 <v-btn type="submit" @click="login">登录</v-btn></v-form>
+              <v-divider></v-divider>
+              <v-text-field label="用户名（留空以使用无用户名登录[密钥驻留]）" prepend-icon="mdi-account"
+                v-model="login_username"></v-text-field>
+              <v-btn color=" primary" @click="usewebauthn">或使用认证器登录</v-btn>
             </v-window-item>
             <v-window-item value="signup">
               <v-form v-model="sign_up_valid" @submit.prevent>
@@ -55,15 +56,11 @@
   </v-app>
 </template>
 <script setup>
-import { getusertoken } from '@/utils/index.js'
+import swal from 'sweetalert';
+import { getusertoken, getBase64FromBytes, getBytesFromBase64 } from '@/utils/index.js'
 import { ref } from 'vue'
 //public
 let tab = ref(null)
-let tiptitle = ref('')
-let tiptype = ref('')
-let tiptext = ref('')
-let tipshow = ref(false)
-let noerr = ref(true)
 let nooath2 = ref(false)
 //public end
 // get client id from url query
@@ -85,11 +82,7 @@ if (!clientid) {
     .then((res) => {
       res.json().then((resjson) => {
         if (!res.ok) {
-          noerr.value = false
-          tipshow.value = true
-          tiptitle.value = '获取应用详情错误'
-          tiptext.value = resjson.error
-          tiptype.value = 'error'
+          throw new Error(resjson.error)
         } else {
           name.value = resjson.name
         }
@@ -97,11 +90,7 @@ if (!clientid) {
     })
     .catch((err) => {
       console.log(err)
-      noerr.value = false
-      tipshow.value = true
-      tiptitle.value = '无法获取应用详情'
-      tiptype.value = 'error'
-      tiptext.value = '网络错误'
+      swal('获取应用详情错误', err.message, 'error')
     })
 }
 //test if login
@@ -145,12 +134,8 @@ function login() {
     .then((res) => {
       res.json().then((resjson) => {
         if (!res.ok) {
-          // console.log(resjson.error);
-          tipshow.value = true
-          tiptitle.value = '登录失败'
-          tiptype.value = 'error'
-          tiptext.value = resjson.error
-          reset_tip()
+          swal('登录失败', resjson.error, 'error')
+          throw new Error(resjson.error)
         } else {
           console.log(resjson)
           let wheretostorage
@@ -171,12 +156,88 @@ function login() {
       })
     })
     .catch((err) => {
-      console.log(err.error)
-      tipshow.value = true
-      tiptitle.value = '登录失败'
-      tiptype.value = 'error'
-      tiptext.value = '网络错误'
-      reset_tip()
+      console.log(err)
+      swal('登录失败', err.message, 'error')
+    })
+}
+function usewebauthn() {
+  fetch('/api/user/startwlogin/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      username: login_username.value
+    })
+  })
+    .then(res => {
+      if (!res.ok) {
+        res.json().then(resjson => {
+          swal('登录失败', resjson.error, 'error')
+        })
+        throw new Error("!!!");
+      } else {
+        return res
+      }
+    })
+    .then(res => res.json())
+    .then(res => res.options)
+    .then(resjson => {
+      console.log(resjson)
+      resjson.publicKey.challenge = getBytesFromBase64(resjson.publicKey.challenge);
+      if (resjson.publicKey.allowCredentials) {
+        for (var i = 0; i < resjson.publicKey.allowCredentials.length; i++) {
+          resjson.publicKey.allowCredentials[i].id = getBytesFromBase64(resjson.publicKey.allowCredentials[i].id);
+        }
+      }
+      return resjson
+    })
+    .then(c => navigator.credentials.get(c))
+    .then(res => { console.log(res); return res })
+    .then(res => fetch('/api/user/finishwlogin/', {
+      method: 'POST',
+      body: JSON.stringify({
+        rawId: getBase64FromBytes(res.rawId),
+        type: res.type,
+        id: res.id,
+        response: {
+          authenticatorData: getBase64FromBytes(res.response.authenticatorData),
+          signature: getBase64FromBytes(res.response.signature),
+          userHandle: getBase64FromBytes(res.response.userHandle),
+          clientDataJSON: getBase64FromBytes(res.response.clientDataJSON),
+        }
+      })
+    }))
+    .then(res => {
+      if (!res.ok) {
+        res.json().then(resjson => {
+          swal('登录失败', resjson.error, 'error')
+        })
+        throw new Error("!!!");
+      }
+      return res
+    })
+    .then(res => res.json())
+    .then(resjson => {
+      console.log(resjson)
+      let wheretostorage
+      if (login_remember_me.value) {
+        wheretostorage = localStorage
+      } else {
+        wheretostorage = sessionStorage
+      }
+      wheretostorage.setItem('token', resjson.token)
+      wheretostorage.setItem('exp', resjson.expire)
+      if (nooath2.value) {
+        window.location.href = 'settings.html'
+      } else {
+        window.location.href = 'authorize.html' + window.location.search
+      }
+    })
+    .catch(nerr => {
+      if (nerr.message == "!!!") return
+      swal('登录失败', nerr.message, 'error')
+      throw nerr
     })
 }
 //login end
@@ -241,11 +302,6 @@ function signup() {
       tiptype.value = 'error'
       tiptext.value = '网络错误'
     })
-}
-function reset_tip() {
-  setTimeout(() => {
-    tipshow.value = false
-  }, 2000)
 }
 </script>
 <style>

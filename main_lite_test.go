@@ -11,6 +11,7 @@ import (
 	"github.com/justin-jiajia/easysso/api/config"
 	"github.com/justin-jiajia/easysso/api/database"
 	"github.com/justin-jiajia/easysso/api/router"
+	"github.com/justin-jiajia/easysso/api/webauthn"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,8 @@ func SetupRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	config.ReadConfig()
+	webauthn.InitSessionStore()
+	webauthn.InitWebauthn()
 	database.InitDB()
 	database.Migrate()
 	router.InitApi(r)
@@ -70,6 +73,7 @@ func TestSignUpAndSignIn(t *testing.T) {
 	//Sign IN
 	w = PerformPostRequest(r, "/api/user/sign_in/", "", gin.H{"username": username, "password": passwd})
 	a = JSONToMap(*w)
+	t.Log(a)
 	assert.Equal(t, w.Code, 200)
 	assert.NotNil(t, a["token"])
 	token := a["token"].(string)
@@ -77,9 +81,8 @@ func TestSignUpAndSignIn(t *testing.T) {
 	assert.Equal(t, a["id"], id)
 	assert.NotNil(t, a["expire"])
 	//Change Passwd
-	oldpasswd := passwd
 	passwd = uuid.New().String()
-	w = PerformPostRequest(r, "/api/user/settings/change_passwd/", token, gin.H{"new_passwd": passwd, "old_passwd": oldpasswd})
+	w = PerformPostRequest(r, "/api/user/settings/change_passwd/", token, gin.H{"new_passwd": passwd})
 	assert.Equal(t, w.Code, 204)
 	//Sign IN Again
 	w = PerformPostRequest(r, "/api/user/sign_in/", "", gin.H{"username": username, "password": passwd})
