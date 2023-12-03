@@ -39,7 +39,7 @@ jobs:
 
     - name: Build linux
       run: |
-        go build main.go
+        go build -ldflags '-linkmode "external" -extldflags "-static"' main.go 
         mv main easysso_linux
        
     - name: Upload a Build Artifact
@@ -92,11 +92,15 @@ jobs:
     steps:
     - name: Download
       uses: actions/download-artifact@v3
+      with:
+        name: |
+          easysso_win.exe
+          easysso_linux
 
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         draft: true
         files: |
-          /home/runner/work/easysso/easysso/easysso_win.exe
-          /home/runner/work/easysso/easysso/easysso_linux
+          easysso_win.exe
+          easysso_linux
