@@ -15,6 +15,9 @@ type ConfigT struct {
 	TokenName      string `ini:"token_name"`
 	TokenExpTime   int64  `ini:"token_exp_time"`
 	AvatarSavePath string `ini:"avatar_save_path"`
+	DBSavePath string `ini:"db_save_path"`
+	IsDevString string `ini:"dev"`
+	IsDev bool
 	TokenKeyByte   []byte
 }
 type Client struct {
@@ -42,6 +45,7 @@ func ReadConfig() {
 		fmt.Println(err)
 		log.Panic("Cannot load config.ini")
 	}
+	Config.IsDev=Config.IsDevString=="true"
 	Config.TokenKeyByte = []byte(Config.TokenKey)
 	err = os.MkdirAll(Config.AvatarSavePath, os.ModePerm)
 	if err != nil {

@@ -18,12 +18,15 @@ var front_fs_orgi embed.FS
 
 func main() {
 	log.SetFlags(log.Llongfile | log.Lmicroseconds | log.Ldate)
-	log.Println("Creating web server...")
-	r := gin.New()
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
 	log.Println("Reading Config...")
 	config.ReadConfig()
+	log.Println("Creating web server...")
+	r := gin.New()
+	if !config.Config.IsDev{
+		gin.SetMode(gin.ReleaseMode)
+	}
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 	log.Println("Connecting to database...")
 	database.InitDB()
 	log.Println("Mirgrating database...")
