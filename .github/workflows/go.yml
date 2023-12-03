@@ -90,12 +90,15 @@ jobs:
     permissions:
       contents: write
     steps:
-    - name: Download
+    - name: Download Win
       uses: actions/download-artifact@v3
       with:
-        name: |
-          easysso_win.exe
-          easysso_linux
+        name: easysso_win.exe
+
+    - name: Download Linux
+      uses: actions/download-artifact@v3
+      with:
+        name: easysso_linux
 
     - name: Release
       uses: softprops/action-gh-release@v1
