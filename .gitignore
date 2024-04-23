@@ -24,3 +24,5 @@ go.work
 front_output/
 
 *.sqlite
+config.ini
+myconfig.ini
