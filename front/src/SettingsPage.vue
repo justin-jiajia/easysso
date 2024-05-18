@@ -153,7 +153,7 @@ function add_authenticator() {
 }
 function refresh_aus() {
     refreshloading.value = true
-    fetch('/api/user/settings/webauthn/list', {
+    fetch('/api/user/settings/webauthn/list/', {
         method: 'GET',
         headers: authedheader(),
     })
@@ -293,36 +293,25 @@ function removeaccount() {
         if ('unregister' != res) {
             throw Error("user cancelled")
         }
-    })
-        .then(() => swal({
-            title: '输入密码',
-            content: {
-                element: "input",
-                attributes: {
-                    placeholder: "请输入密码...",
-                    type: "password",
-                }
-            }
-        })).then((res) => fetch('/api/user/settings/remove/', {
-            method: 'POST',
-            headers: authedheader(),
-            body: JSON.stringify({
-                "passwd": res
+    }).then(() => fetch('/api/user/settings/remove/', {
+        method: 'POST',
+        headers: authedheader(),
+        body: JSON.stringify({})
+    })).then(res => {
+        console.log(res)
+        if (!res.ok) {
+            res.json().then(resjson => {
+                swal('注销失败', resjson.error, 'error')
             })
-        })).then(res => {
-            if (!res.ok) {
-                res.json().then(resjson => {
-                    swal('注销失败', resjson.error, 'error')
-                })
-                throw Error("user cancelled")
-            }
-            else {
-                swal("成功", "注销成功", "success").then(() => window.location = 'logout.html')
-            }
-        }).catch((err) => {
-            if (err.message == "user cancelled") return
-            swal('注销失败', err.message, 'error')
-        })
+            throw Error("user cancelled")
+        }
+        else {
+            swal("成功", "注销成功", "success").then(() => window.location = 'logout.html')
+        }
+    }).catch((err) => {
+        if (err.message == "user cancelled") return
+        swal('注销失败', err.message, 'error')
+    })
 }
 function logout() {
     window.location = '/ui/logout.html';

@@ -21,7 +21,7 @@ func WebauthnList(c *gin.Context) {
 	uid := middleware.ID
 	user := &database.User{}
 	database.DB.Where(database.User{ID: uid}).First(&user)
-	var res []CredentialRes
+	res := make([]CredentialRes, 0)
 	var crs []database.Credential
 	err := database.DB.Model(&user).Association("Credentials").Find(&crs)
 	if err != nil {
