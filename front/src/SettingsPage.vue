@@ -7,73 +7,112 @@
             </template>
         </v-app-bar>
         <v-main>
-            <v-card>
-                <v-card-item>
-                    <v-card-title>认证器设置</v-card-title>
-                </v-card-item>
-                <v-card-text>
-                    <v-container>
-                        <v-row>
-                            <v-col>
-                                <v-card>
-                                    <v-card-item>
-                                        <v-card-title>添加认证器</v-card-title>
-                                    </v-card-item>
-                                    <v-card-text>
-                                        配置后你将能够用支持的设备通过指纹、FaceID等方式进行快速登录
-                                    </v-card-text>
-                                    <v-card-actions>
-                                        <v-btn prepend-icon="mdi-add" @click="add_authenticator">添加认证器</v-btn>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-col>
-                            <v-col>
-                                <v-card>
-                                    <v-card-item>
-                                        <v-card-title>管理认证器<v-btn icon="mdi-refresh" @click="refresh_aus()"
-                                                :loading="refreshloading"></v-btn></v-card-title>
-                                    </v-card-item>
-                                    <v-card-actions>
-                                        <v-table>
-                                            <thead>
-                                                <tr>
-                                                    <th>名称</th>
-                                                    <th>创建日期</th>
-                                                    <th>上次使用</th>
-                                                    <th>无用户名登录</th>
-                                                    <th>操作</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr v-for="item in aus">
-                                                    <th>{{ item.name }}</th>
-                                                    <th>{{ getdatestring(item.created) }}</th>
-                                                    <th>{{ getdatestring(item.last_used) }}</th>
-                                                    <th><v-icon
-                                                            :icon="item.username_less ? 'mdi-check' : 'mdi-close'"></v-icon>
-                                                    </th>
-                                                    <th><v-btn icon="mdi-pencil" @click="editau(item.id)"></v-btn>
-                                                        <v-btn icon="mdi-delete" @click="deleteau(item.id)"></v-btn>
-                                                    </th>
-                                                </tr>
-                                            </tbody>
-                                        </v-table>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-col>
-                        </v-row>
-                    </v-container>
-                </v-card-text>
-            </v-card>
-            <v-card>
-                <v-card-item>
-                    <v-card-title>安全设置</v-card-title>
-                </v-card-item>
-                <v-card-actions>
-                    <v-btn prepend-icon="mdi-form-textbox-password" @click="changepasswd">修改密码</v-btn>
-                    <v-btn prepend-icon="mdi-delete" @click="removeaccount">注销账户</v-btn>
-                </v-card-actions>
-            </v-card>
+            <v-container>
+                <v-row justify="center">
+                    <v-card>
+                        <v-card-item>
+                            <v-card-title>认证器设置</v-card-title>
+                        </v-card-item>
+                        <v-card-text>
+                            <v-container>
+                                <v-row>
+                                    <v-col>
+                                        <v-card>
+                                            <v-card-item>
+                                                <v-card-title>添加认证器</v-card-title>
+                                            </v-card-item>
+                                            <v-card-text>
+                                                配置后你将能够用支持的设备通过指纹、FaceID等方式进行快速登录
+                                            </v-card-text>
+                                            <v-card-actions>
+                                                <v-btn prepend-icon="mdi-add" @click="add_authenticator">添加认证器</v-btn>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </v-col>
+                                    <v-col>
+                                        <v-card>
+                                            <v-card-item>
+                                                <v-card-title>管理认证器<v-btn icon="mdi-refresh" @click="refresh_aus()"
+                                                        :loading="refreshloading"></v-btn></v-card-title>
+                                            </v-card-item>
+                                            <v-card-actions>
+                                                <v-table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>名称</th>
+                                                            <th>创建日期</th>
+                                                            <th>上次使用</th>
+                                                            <th>无用户名登录</th>
+                                                            <th>操作</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="item in aus">
+                                                            <th>{{ item.name }}</th>
+                                                            <th>{{ getdatestring(item.created) }}</th>
+                                                            <th>{{ getdatestring(item.last_used) }}</th>
+                                                            <th><v-icon
+                                                                    :icon="item.username_less ? 'mdi-check' : 'mdi-close'"></v-icon>
+                                                            </th>
+                                                            <th><v-btn icon="mdi-pencil"
+                                                                    @click="editau(item.id)"></v-btn>
+                                                                <v-btn icon="mdi-delete"
+                                                                    @click="deleteau(item.id)"></v-btn>
+                                                            </th>
+                                                        </tr>
+                                                    </tbody>
+                                                </v-table>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </v-col>
+                                </v-row>
+                            </v-container>
+                        </v-card-text>
+                    </v-card>
+                </v-row>
+                <v-row justify="center">
+                    <v-col>
+                        <v-card>
+                            <v-card-item>
+                                <v-card-title>安全设置</v-card-title>
+                            </v-card-item>
+                            <v-card-actions>
+                                <v-btn prepend-icon="mdi-form-textbox-password" @click="changepasswd">修改密码</v-btn>
+                                <v-btn prepend-icon="mdi-delete" @click="removeaccount">注销账户</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-col>
+                    <!-- <v-spacer></v-spacer> -->
+                    <v-col>
+                        <v-card>
+                            <v-card-item>
+                                <v-card-title>行为日志<v-btn icon="mdi-refresh" @click="refresh_log()"
+                                        :loading="logloading"></v-btn></v-card-title>
+                            </v-card-item>
+                            <v-card-actions>
+                                <v-table>
+                                    <thead>
+                                        <tr>
+                                            <th>操作名称</th>
+                                            <th>日期</th>
+                                            <th>设备</th>
+                                            <th>IP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in log">
+                                            <th>{{ item.action }}</th>
+                                            <th>{{ getdatestring(item.actiontime) }}</th>
+                                            <th>{{ item.ua }}</th>
+                                            <th>{{ item.ip }}</th>
+                                        </tr>
+                                    </tbody>
+                                </v-table>
+                            </v-card-actions>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
         </v-main>
     </v-app>
 </template>
@@ -82,7 +121,9 @@ import swal from 'sweetalert';
 import { authedheader, getusertoken, getBase64FromBytes, getBytesFromBase64 } from '@/utils/index.js'
 import { ref } from 'vue'
 let aus = ref([])
+let log = ref([])
 let refreshloading = ref(false)
+let logloading = ref(false)
 if (getusertoken() == null) {
     window.location = 'login.html'
 }
@@ -316,5 +357,30 @@ function removeaccount() {
 function logout() {
     window.location = '/ui/logout.html';
 }
+function refresh_log() {
+    logloading.value = true
+    fetch('/api/user/settings/webauthn/log/', {
+        method: 'GET',
+        headers: authedheader(),
+    })
+        .then(res => {
+            if (!res.ok) {
+                res.json().then(resjson => {
+                    swal('失败', resjson.error, 'error')
+                })
+                throw new Error("!!!");
+            } else {
+                return res
+            }
+        })
+        .then(res => res.json())
+        .then(res => log.value = res)
+        .catch(nerr => {
+            if (nerr.message == "!!!") return
+            swal('查询失败', nerr.message, 'error')
+            throw nerr
+        }).finally(() => logloading.value = false)
+}
 refresh_aus()
+refresh_log()
 </script>

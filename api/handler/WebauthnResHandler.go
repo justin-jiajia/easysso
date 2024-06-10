@@ -11,6 +11,7 @@ import (
 	"github.com/justin-jiajia/easysso/api/config"
 	"github.com/justin-jiajia/easysso/api/database"
 	"github.com/justin-jiajia/easysso/api/middleware"
+	"github.com/justin-jiajia/easysso/api/utils"
 	"github.com/justin-jiajia/easysso/api/webauthn"
 )
 
@@ -88,6 +89,7 @@ func WebauthnResFinishHandler(ctx *gin.Context) {
 	}
 	log.Println(c)
 	database.DB.Save(&c)
+	utils.NewUserLog(uid, ctx.GetHeader("User-Agent"), ctx.ClientIP(), "绑定新的认证器")
 	ctx.SetCookie("webauthn", "", -1, "/", config.Config.RPID, false, true)
 	ctx.String(http.StatusNoContent, "\n")
 }

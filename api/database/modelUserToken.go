@@ -14,6 +14,23 @@ type User struct {
 	AvatarFileName string
 	CreatedAt      time.Time
 	Credentials    []Credential
+	UserTokens     []UserToken
+	UserLogs       []UserLog
+}
+
+type UserToken struct {
+	// it belongs to User
+	UserID uint
+	Exp    time.Time
+	Token  string `gorm:"primaryKey"`
+}
+
+type UserLog struct {
+	UserID     uint
+	UserAgent  string
+	IP         string
+	ActionTime time.Time
+	Action     string
 }
 
 func (user *User) WebAuthnID() []byte {
@@ -57,7 +74,7 @@ func DiscoverableUserHandler(rawid, userHandle []byte) (webauthn.User, error) {
 	return user, res.Error
 }
 
-type Token struct {
+type ServerCode2Token struct {
 	Token    string
 	Exp      time.Time
 	Code     string `gorm:"primaryKey"`

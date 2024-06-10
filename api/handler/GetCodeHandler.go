@@ -29,7 +29,7 @@ func GetCodeHandler(ctx *gin.Context) {
 		return
 	}
 	code := uuid.New().String()
-	nw := &database.Token{}
+	nw := &database.ServerCode2Token{}
 	nw.ClientID = json.ClientID
 	nw.Exp = time.Now().Add(time.Minute * 5)
 	nw.Token = utils.NewOAuth2Token(middleware.ID, json.ClientID, middleware.ExpTime)

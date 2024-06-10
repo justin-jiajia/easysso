@@ -271,13 +271,10 @@ function signup() {
     .then((res) => {
       res.json().then((resjson) => {
         if (!res.ok) {
-          // console.log(resjson.error);
-          tipshow.value = true
-          tiptitle.value = '注册失败'
-          tiptype.value = 'error'
-          tiptext.value = resjson.error
-          reset_tip()
+          swal('注册失败', resjson.error, 'error')
+          throw new Error("!!!");
         } else {
+          console.log("sign up success")
           console.log(resjson)
           let wheretostorage
           if (sign_up_remember_me.value) {
@@ -295,12 +292,10 @@ function signup() {
         }
       })
     })
-    .catch((err) => {
-      console.log(err)
-      tipshow.value = true
-      tiptitle.value = '注册失败'
-      tiptype.value = 'error'
-      tiptext.value = '网络错误'
+    .catch(nerr => {
+      if (nerr.message == "!!!") return
+      swal('注册失败', nerr.message, 'error')
+      throw nerr
     })
 }
 </script>

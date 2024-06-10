@@ -25,4 +25,5 @@ func ChangePasswdHandler(ctx *gin.Context) {
 	now_user.PasswordHash = utils.GetPasswdHash(json.NewPasswd)
 	ctx.String(http.StatusNoContent, "\n")
 	database.DB.Save(&now_user)
+	utils.NewUserLog(now_user.ID, ctx.GetHeader("User-Agent"), ctx.ClientIP(), "修改密码")
 }

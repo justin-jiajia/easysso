@@ -22,7 +22,7 @@ func GetTokenHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "出错了: " + err.Error()})
 		return
 	}
-	code := database.Token{}
+	code := database.ServerCode2Token{}
 	res := database.DB.First(&code, "code = ? AND client_id = ?", json.Code, json.ClientID)
 	if res.Error == gorm.ErrRecordNotFound {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "错误的client_id,client_secret或code"})

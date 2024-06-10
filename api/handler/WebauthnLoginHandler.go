@@ -116,5 +116,6 @@ func WebauthnLoginFinishHandler(ctx *gin.Context) {
 
 	token, exp := utils.NewUserToken(user.ID)
 	ctx.SetCookie("webauthn", "", -1, "/", config.Config.RPID, false, true)
+	utils.NewUserLog(user.ID, ctx.GetHeader("User-Agent"), ctx.ClientIP(), "修改密码")
 	ctx.JSON(http.StatusOK, gin.H{"token": token, "id": user.ID, "expire": exp.Unix()})
 }

@@ -26,6 +26,7 @@ func SignInHandler(ctx *gin.Context) {
 	if result.Error == nil {
 		if utils.VerifyPasswd(json.Passward, nowuser.PasswordHash) {
 			token, exp := utils.NewUserToken(nowuser.ID)
+			utils.NewUserLog(nowuser.ID, ctx.GetHeader("User-Agent"), ctx.ClientIP(), "以账号密码方式登录")
 			ctx.JSON(http.StatusOK, gin.H{"token": token, "id": nowuser.ID, "expire": exp.Unix()})
 			return
 		} else {

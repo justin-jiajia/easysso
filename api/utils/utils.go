@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/justin-jiajia/easysso/api/config"
 	"github.com/justin-jiajia/easysso/api/database"
 	"golang.org/x/crypto/bcrypt"
@@ -43,58 +44,24 @@ func NewOAuth2Token(userid uint, clientid string, exp time.Time) string {
 }
 
 func NewUserToken(userid uint) (string, time.Time) {
-	timenow := time.Now()
-	timeexp := timenow.Add(time.Second * time.Duration(config.Config.TokenExpTime))
-	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
-		jwt.RegisteredClaims{
-			Issuer:    config.Config.TokenName,
-			Subject:   fmt.Sprint(userid),
-			ExpiresAt: jwt.NewNumericDate(timeexp),
-		})
-	s, err := t.SignedString(config.Config.TokenKeyByte)
-	if err != nil {
-		fmt.Println(err)
-		panic("Error sign token")
-	}
+	s := uuid.New().String()
+	timeexp := time.Now().Add(time.Duration(config.Config.TokenExpTime * int64(time.Second)))
+	database.DB.Create(&database.UserToken{Token: s, Exp: timeexp, UserID: userid})
 	return "Bearer " + s, timeexp
 }
 
+func NewUserLog(userid uint, useragent string, ip string, action string) {
+	database.DB.Create(&database.UserLog{UserID: userid, UserAgent: useragent, IP: ip, ActionTime: time.Now(), Action: action})
+}
+
 func VerifyUserToken(token_string string) (uint, time.Time, error) {
-	token, err := jwt.Parse(token_string,
-		func(t *jwt.Token) (interface{}, error) {
-			return config.Config.TokenKeyByte, nil
-		},
-		jwt.WithValidMethods([]string{"HS512"}),
-		jwt.WithIssuer(config.Config.TokenName),
-	)
-	if err != nil {
-		return 0, time.Now(), err
+	token := &database.UserToken{}
+	database.DB.Model(&database.UserToken{}).Where(&database.UserToken{Token: token_string}).First(&token)
+	if token.Exp.Unix() < time.Now().Unix() {
+		database.DB.Delete(&token)
+		return 0, time.Now(), errors.New("token expired")
 	}
-	sub, err2 := token.Claims.GetSubject()
-	if err2 != nil {
-		return 0, time.Now(), err2
-	}
-	rid, err3 := strconv.Atoi(sub)
-	if err3 != nil {
-		return 0, time.Now(), err3
-	}
-	exp, err4 := token.Claims.GetExpirationTime()
-	if err4 != nil {
-		return 0, time.Now(), err4
-	}
-	if exp == nil {
-		return 0, time.Now(), errors.New("No Exp")
-	}
-	if int64(exp.Unix()) < time.Now().Unix() {
-		return 0, time.Now(), errors.New("Token expired")
-	}
-	id := uint(rid)
-	now_user := &database.User{}
-	res := database.DB.First(&now_user, id)
-	if res.Error != nil {
-		return 0, time.Now(), res.Error
-	}
-	return id, exp.Time, nil
+	return token.UserID, token.Exp, nil
 }
 
 func VerifyOath2Token(token_string string, clientid string) (uint, error) {
@@ -121,10 +88,10 @@ func VerifyOath2Token(token_string string, clientid string) (uint, error) {
 		return 0, err4
 	}
 	if exp == nil {
-		return 0, errors.New("No Exp!")
+		return 0, errors.New("no exp")
 	}
 	if int64(exp.Unix()) < time.Now().Unix() {
-		return 0, errors.New("Token expired!")
+		return 0, errors.New("token expired")
 	}
 	aud, err5 := token.Claims.GetAudience()
 	if err5 != nil {
@@ -132,7 +99,7 @@ func VerifyOath2Token(token_string string, clientid string) (uint, error) {
 	}
 	audstr := aud[0]
 	if string(audstr) != clientid {
-		return 0, errors.New("Clientid mismatch!")
+		return 0, errors.New("clientid mismatch")
 	}
 	id := uint(rid)
 	now_user := &database.User{}

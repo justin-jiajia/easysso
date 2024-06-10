@@ -28,6 +28,7 @@ func InitApi(r *gin.Engine) {
 					webauthn.GET("/startregistration/", handler.WebauthnResStartHandler)    //注册
 					webauthn.POST("/finishregistration/", handler.WebauthnResFinishHandler) //注册完成
 					webauthn.GET("/list/", handler.WebauthnList)                            //列举验证器
+					webauthn.GET("/log/", handler.GetActions)                               //列举行为日志
 					webauthn.POST("/delete/", handler.WebauthnDelete)                       //删除验证器
 					webauthn.POST("/edit/", handler.WebauthnEdit)                           //重命名验证器
 
