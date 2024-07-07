@@ -10,6 +10,7 @@ import (
 
 var ID uint
 var ExpTime time.Time
+var Token string
 
 func Auth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -30,6 +31,7 @@ func Auth() gin.HandlerFunc {
 			}
 			ID = id
 			ExpTime = exp
+			Token = token
 		}
 	}
 }

@@ -12,10 +12,10 @@ import (
 type ConfigT struct {
 	Host           string `ini:"host"`
 	TokenKey       string `ini:"token_key"`
-	TokenName      string `ini:"token_name"`
 	TokenExpTime   int64  `ini:"token_exp_time"`
 	AvatarSavePath string `ini:"avatar_save_path"`
-	DBSavePath     string `ini:"db_save_path"`
+	DBType         string `ini:"db_type"`
+	DBPath         string `ini:"db_path"`
 	IsDevString    string `ini:"dev"`
 	Displayname    string `ini:"display_name"`
 	RPID           string `ini:"rp_id"`

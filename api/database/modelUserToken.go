@@ -7,22 +7,24 @@ import (
 )
 
 type User struct {
-	ID             uint `gorm:"primaryKey"`
-	UUID           string
-	UserName       string
-	PasswordHash   string
-	AvatarFileName string
-	CreatedAt      time.Time
-	Credentials    []Credential
-	UserTokens     []UserToken
-	UserLogs       []UserLog
+	ID               uint `gorm:"primaryKey"`
+	UUID             string
+	UserName         string
+	PasswordHash     string
+	AvatarFileName   string
+	CreatedAt        time.Time
+	Credentials      []Credential
+	UserTokens       []UserToken
+	UserLogs         []UserLog
+	UserServerTokens []ServerToken
 }
 
 type UserToken struct {
 	// it belongs to User
-	UserID uint
-	Exp    time.Time
-	Token  string `gorm:"primaryKey"`
+	UserID           uint
+	Exp              time.Time
+	Token            string `gorm:"primaryKey"`
+	UserServerTokens []ServerToken
 }
 
 type UserLog struct {
@@ -79,4 +81,12 @@ type ServerCode2Token struct {
 	Exp      time.Time
 	Code     string `gorm:"primaryKey"`
 	ClientID string
+}
+
+type ServerToken struct {
+	Token       string
+	Exp         time.Time
+	UserID      uint
+	ClientID    string
+	UserTokenID string
 }

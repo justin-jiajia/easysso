@@ -3,10 +3,8 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/justin-jiajia/easysso/api/config"
 	"github.com/justin-jiajia/easysso/api/database"
@@ -28,18 +26,8 @@ func VerifyPasswd(passwd string, hash string) bool {
 }
 
 func NewOAuth2Token(userid uint, clientid string, exp time.Time) string {
-	t := jwt.NewWithClaims(jwt.SigningMethodHS512,
-		jwt.RegisteredClaims{
-			Issuer:    config.Config.TokenName,
-			Subject:   fmt.Sprint(userid),
-			ExpiresAt: jwt.NewNumericDate(exp),
-			Audience:  jwt.ClaimStrings{clientid},
-		})
-	s, err := t.SignedString(config.Config.TokenKeyByte)
-	if err != nil {
-		fmt.Println(err)
-		panic("Error sign token")
-	}
+	s := uuid.New().String()
+	database.DB.Create(&database.ServerToken{Token: s, Exp: exp, ClientID: clientid, UserID: userid})
 	return s
 }
 
@@ -65,47 +53,11 @@ func VerifyUserToken(token_string string) (uint, time.Time, error) {
 }
 
 func VerifyOath2Token(token_string string, clientid string) (uint, error) {
-	token, err := jwt.Parse(token_string,
-		func(t *jwt.Token) (interface{}, error) {
-			return config.Config.TokenKeyByte, nil
-		},
-		jwt.WithValidMethods([]string{"HS512"}),
-		jwt.WithIssuer(config.Config.TokenName),
-	)
-	if err != nil {
-		return 0, err
-	}
-	sub, err2 := token.Claims.GetSubject()
-	if err2 != nil {
-		return 0, err2
-	}
-	rid, err3 := strconv.Atoi(sub)
-	if err3 != nil {
-		return 0, err3
-	}
-	exp, err4 := token.Claims.GetExpirationTime()
-	if err4 != nil {
-		return 0, err4
-	}
-	if exp == nil {
-		return 0, errors.New("no exp")
-	}
-	if int64(exp.Unix()) < time.Now().Unix() {
+	token := &database.ServerToken{}
+	database.DB.Model(&database.ServerToken{}).Where(&database.ServerToken{Token: token_string, ClientID: clientid}).First(&token)
+	if token.Exp.Unix() < time.Now().Unix() {
+		database.DB.Delete(&token)
 		return 0, errors.New("token expired")
 	}
-	aud, err5 := token.Claims.GetAudience()
-	if err5 != nil {
-		return 0, err5
-	}
-	audstr := aud[0]
-	if string(audstr) != clientid {
-		return 0, errors.New("clientid mismatch")
-	}
-	id := uint(rid)
-	now_user := &database.User{}
-	res := database.DB.First(&now_user, id)
-	if res.Error != nil {
-		return 0, res.Error
-	}
-	return id, nil
+	return token.UserID, nil
 }

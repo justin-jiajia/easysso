@@ -5,5 +5,6 @@ func Migrate() {
 	DB.AutoMigrate(&ServerCode2Token{})
 	DB.AutoMigrate(&Credential{})
 	DB.AutoMigrate(&UserToken{})
+	DB.AutoMigrate(&ServerToken{})
 	DB.AutoMigrate(&UserLog{})
 }

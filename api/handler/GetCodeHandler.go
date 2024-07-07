@@ -23,7 +23,7 @@ func GetCodeHandler(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "出错了: " + err.Error()})
 		return
 	}
-	_, ok := config.ClientsMap[json.ClientID]
+	c, ok := config.ClientsMap[json.ClientID]
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "不正确的ClientID"})
 		return
@@ -33,6 +33,7 @@ func GetCodeHandler(ctx *gin.Context) {
 	nw.ClientID = json.ClientID
 	nw.Exp = time.Now().Add(time.Minute * 5)
 	nw.Token = utils.NewOAuth2Token(middleware.ID, json.ClientID, middleware.ExpTime)
+	utils.NewUserLog(middleware.ID, ctx.Request.UserAgent(), ctx.ClientIP(), "登录"+c.Name)
 	nw.Code = code
 	database.DB.Create(nw)
 	ctx.JSON(http.StatusOK, gin.H{"code": code})

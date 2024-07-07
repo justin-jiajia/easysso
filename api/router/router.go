@@ -23,6 +23,7 @@ func InitApi(r *gin.Engine) {
 				setting.POST("/avatar/", handler.AvatarUploadHandler)        //上传头像
 				setting.POST("/change_passwd/", handler.ChangePasswdHandler) //修改密码
 				setting.POST("/remove/", handler.RemoveUserHandler)          //删除账户
+				setting.POST("/remove_token/", handler.RemoveTokenHandler)   //删除token
 				webauthn := setting.Group("/webauthn/")
 				{
 					webauthn.GET("/startregistration/", handler.WebauthnResStartHandler)    //注册

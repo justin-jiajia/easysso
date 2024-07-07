@@ -2,7 +2,7 @@
     "clients": [
         {
             "name": "test",
-            "callback": "http://example.com/",
+            "callback": "http://localhost:8888/callback",
             "client_id": "test",
             "client_secret": "test"
         }

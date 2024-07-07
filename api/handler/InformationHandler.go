@@ -28,5 +28,5 @@ func InformationHandler(ctx *gin.Context) {
 	}
 	now_user := &database.User{}
 	database.DB.First(&now_user, uid)
-	ctx.JSON(http.StatusOK, gin.H{"id": uid, "username": now_user.UserName, "jointime": now_user.CreatedAt})
+	ctx.JSON(http.StatusOK, gin.H{"id": uid, "username": now_user.UserName, "jointime": now_user.CreatedAt.Unix()})
 }
